@@ -9,43 +9,38 @@ weather = 'weather'
 wind_direction = 'wind_direction'
 wind_power = 'wind_power'
 
-# train_start_id = 1
-# train_end_id = 1000
-# validate_start_id = 1001
-# validate_end_id = 1454
-# predict_start_id = 1
-# predict_end_id = 1454
+
+feature_date_durations = [
+    '2015/1/1-2015/12/31',
+    '2015/2/1-2016/1/31',
+    '2015/3/1-2016/2/29',
+    '2015/4/1-2016/3/31',
+    '2015/5/1-2016/4/30',
+    '2015/6/1-2016/5/31',
+    '2015/7/1-2016/6/30',
+    '2015/8/1-2016/7/31',
+    '2015/9/1-2016/8/31'
+]
+
+date_durations = [
+    '2016/1/1-2016/1/31',
+    '2016/2/1-2016/2/29',
+    '2016/3/1-2016/3/31',
+    '2016/4/1-2016/4/30',
+    '2016/5/1-2016/5/31',
+    '2016/6/1-2016/6/30',
+    '2016/7/1-2016/7/31',
+    '2016/8/1-2016/8/30',
+    '2016/9/1-2016/9/31'
+]
 
 
-train_feature_start_date = '2015/1/1'
-train_feature_end_date = '2016/6/30'
+data_paths = 'data/data_path/data{}.csv'
 
-validate_feature_start_date = '2015/1/1'
-validate_feature_end_date = '2016/7/31'
+feature_data_paths = 'data/feature_data_path/feature_data{}.csv'
 
-predict_feature_start_date = '2015/1/1'
-predict_feature_end_date = '2016/8/31'
+feature_paths = 'data/feature_path/features{}.csv'
 
-train_start_date = '2016/1/1'
-train_end_date = '2016/7/31'
-
-validate_start_date = '2016/8/1'
-validate_end_date = '2016/8/31'
-
-predict_start_date = '2016/9/1'
-predict_end_date = '2016/9/30'
-
-train_data_path = 'data/data_path/train_data.csv'
-validate_data_path = 'data/data_path/validate_data.csv'
-predict_data_path = 'data/data_path/predict_data.csv'
-
-train_feature_data_path = 'data/feature_data_path/train_feature_data.csv'
-validate_feature_data_path = 'data/feature_data_path/validate_feature_data.csv'
-predict_feature_data_path = 'data/feature_data_path/predict_feature_data.csv'
-
-train_feature_path = 'data/feature_path/train_features.csv'
-validate_feature_path = 'data/feature_path/validate_features.csv'
-predict_feature_path = 'data/feature_path/predict_features.csv'
 
 holiday_set = {
     # 2015年份

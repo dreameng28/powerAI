@@ -17,42 +17,11 @@ class DataView:
         return self.df[self.df[record_date].map(lambda x: True if str2time(date1) <= str2time(str(x))
                                                                   <= str2time(date2) else False)]
 
+    def filter_by_record_date2(self, date1, date2):
+        return self.df[self.df[record_date].map(lambda x: True if date1 <= str2time(str(x)) <= date2 else False)]
+
     # def filter_by_user_id(self, id1, id2):
     #     return self.df[self.df[user_id].map(lambda x: True if id1 <= x <= id2 else False)]
-
-
-# 用户对应年份每日用电量的平均数、中位数、方差
-def user_info_y(df):
-    grouped = df[[user_id, 'year', power_consumption]].groupby([user_id, 'year'], as_index=False)
-    user_power_mean_y = grouped.mean()
-    user_power_median_y = grouped.median()
-    user_power_var_y = grouped.var()
-    user_power_mean_y = user_power_mean_y.rename(columns={power_consumption: 'user_power_mean_y'})
-    user_power_median_y = user_power_median_y.rename(columns={power_consumption: 'user_power_median_y'})
-    user_power_var_y = user_power_var_y.rename(columns={power_consumption: 'user_power_var_y'})
-    return pd.merge(user_power_mean_y, user_power_median_y).merge(user_power_var_y)
-
-
-def user_info(df):
-    grouped = df[[user_id, power_consumption]].groupby(user_id, as_index=False)
-    user_power_hean = grouped.mean()
-    user_power_hedian = grouped.median()
-    user_power_var = grouped.var()
-    user_power_hean = user_power_hean.rename(columns={power_consumption: 'user_power_hean'})
-    user_power_hedian = user_power_hedian.rename(columns={power_consumption: 'user_power_hedian'})
-    user_power_var = user_power_var.rename(columns={power_consumption: 'user_power_var'})
-    return pd.merge(user_power_hean, user_power_hedian).merge(user_power_var)
-
-
-def user_info_h(df):
-    grouped = df[[user_id, 'is_holiday', power_consumption]].groupby([user_id, 'is_holiday'], as_index=False)
-    user_power_hean_h = grouped.mean()
-    user_power_hedian_h = grouped.median()
-    user_power_var_h = grouped.var()
-    user_power_mean_h = user_power_hean_h.rename(columns={power_consumption: 'user_power_mean_h'})
-    user_power_median_h = user_power_hedian_h.rename(columns={power_consumption: 'user_power_median_h'})
-    user_power_var_h = user_power_var_h.rename(columns={power_consumption: 'user_power_var_h'})
-    return pd.merge(user_power_mean_h, user_power_median_h).merge(user_power_var_h)
 
 
 # 用户1-8月较15年的增长率
@@ -65,28 +34,46 @@ def rise_rate(df):
     user_rise_rate.name = 'user_rise_rate'
     return grouped15.join(user_rise_rate).drop(power_consumption, axis=1)
 
-if __name__ == '__main__':
-    # df = pd.read_csv(tianchi_power_csv)
-    # grouped = df[[user_id, 'year', power_consumption]].groupby([user_id, 'year'], as_index=False)
-    # df = grouped.median()
-    # df = rise_rate(df)
-    # print(df)
-    dates = pd.date_range('2016/9/1', '2016/9/30')
-    dates = list(map(lambda x: x.strftime('%Y/%-m/%-d'), dates)) * 1454
-    ids = [i + 1 for i in range(1454)]
-    ids = list(map(lambda x: [x] * 30, ids))
-    ids = list(np.array(ids).flatten())
-    pd.DataFrame({'record_date': dates, 'user_id': ids}).to_csv(predict_data_path, index=False)
 
-    # grouped = df[[user_id, power_consumption]].groupby(user_id, as_index=False).sum()
-    # frame = grouped[power_consumption].map(lambda x: float(x) / 31)
-    # frame.name = 'power_per_day'
-    # grouped = grouped.join(frame)
-    # print(grouped)
-    # s = set()
-    # df = pd.read_csv(yangzhong_heather_csv)
-    # print(df[weather])
-    # for each in df[weather]:
-    #     s.add(each)
-    # print(s)
-    # print(len(s))
+# 用户对应星期每日用电量的平均数、中位数、方差、最大值、最小值
+def user_info_m(df):
+    grouped = df[[user_id, 'month', power_consumption]].groupby([user_id, 'month'], as_index=False)
+    user_power_mean_m = grouped.mean()
+    user_power_median_m = grouped.median()
+    user_power_var_m = grouped.var()
+    user_power_max_m = grouped.max()
+    user_power_min_m = grouped.min()
+    user_power_mean_m = user_power_mean_m.rename(columns={power_consumption: 'user_power_mean_m'})
+    user_power_median_m = user_power_median_m.rename(columns={power_consumption: 'user_power_median_m'})
+    user_power_var_m = user_power_var_m.rename(columns={power_consumption: 'user_power_var_m'})
+    user_power_max_m = user_power_max_m.rename(columns={power_consumption: 'user_power_max_m'})
+    user_power_min_m = user_power_min_m.rename(columns={power_consumption: 'user_power_min_m'})
+    return pd.merge(user_power_mean_m, user_power_median_m).merge(user_power_var_m).\
+        merge(user_power_max_m).merge(user_power_min_m)
+
+
+# 用户对应月份前一月每日用电量的平均数、中位数、方差、最大值、最小值
+def user_info_m_p(df):
+    date2 = df[record_date].map(lambda x: str2time(x)).max()
+    date1 = datetime.datetime(date2.year, date2.month, 1).date()
+    print(date1, date2)
+    grouped = DataView(df).filter_by_record_date2(date1, date2)[[user_id, 'month', power_consumption]].groupby([user_id, 'month'], as_index=False)
+    user_power_mean_m = grouped.mean()
+    user_power_median_m = grouped.median()
+    user_power_var_m = grouped.var()
+    user_power_max_m = grouped.max()
+    user_power_min_m = grouped.min()
+    user_power_mean_m = user_power_mean_m.rename(columns={power_consumption: 'user_power_mean_m_p'})
+    user_power_median_m = user_power_median_m.rename(columns={power_consumption: 'user_power_median_m_p'})
+    user_power_var_m = user_power_var_m.rename(columns={power_consumption: 'user_power_var_m_p'})
+    user_power_max_m = user_power_max_m.rename(columns={power_consumption: 'user_power_max_m_p'})
+    user_power_min_m = user_power_min_m.rename(columns={power_consumption: 'user_power_min_m_p'})
+    return pd.merge(user_power_mean_m, user_power_median_m).merge(user_power_var_m).\
+        merge(user_power_max_m).merge(user_power_min_m).drop('month', axis=1)
+
+if __name__ == '__main__':
+    df1 = pd.read_csv(feature_paths.format(str(0)))
+    df2 = pd.read_csv(feature_paths.format(str(1)))
+    print(len(df1), len(df2))
+    df = pd.DataFrame(pd.concat([df1, df2], axis=0)).reset_index().drop('index', axis=1)
+    print(df)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-python data_split.py
-python feature_extract.py
-python model.py
+python3 data_split.py
+python3 feature_extract.py
+python3 model.py
