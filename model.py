@@ -11,7 +11,6 @@ def x_label(feature_path, pred=False):
         X = pd.read_csv(feature_paths.format(str(each)))
         X_list.append(X)
     X = pd.DataFrame(pd.concat(X_list, axis=0)).reset_index().drop('index', axis=1)
-    # print(X)
     if not pred:
         y = X[power_consumption].tolist()
         X = X.drop([record_date, user_id, power_consumption], axis=1)
@@ -46,14 +45,14 @@ dtrain = xgb.DMatrix(X_train, label=y_train, feature_names=train_columns)
 dvalidate = xgb.DMatrix(X_validate, label=y_validate, feature_names=validate_columns)
 dpredict = xgb.DMatrix(X_predict, feature_names=predict_columns)
 
-param = {'max_depth': 6, 'eta': 0.1, 'silent': 0}
-num_round = 500
+param = {'max_depth': 5, 'eta': 0.1, 'silent': 0}
+num_round = 1000
 watchlist = [(dtrain, 'train'), (dvalidate, 'eval')]
 with open('log', 'w+') as outf:
     sys.stdout = outf
-    bst = xgb.train(param, dtrain, num_round, evals=watchlist, early_stopping_rounds=100)
+    bst = xgb.train(param, dtrain, num_round, evals=watchlist, early_stopping_rounds=150)
 xgb.plot_importance(bst)
-plt.gcf().set_size_inches(20, 16)
+plt.gcf().set_size_inches(20, 30)
 plt.gcf().set_tight_layout(True)
 plt.gcf().savefig('feature_importance.png')
 plt.close()

@@ -1,5 +1,9 @@
 文件介绍：
-
+config.py   存放了用于后续操作的各种配置信息
+data_view.py    是CSV文件的载体
+data_split.py   用于划分数据集
+feature_extract.py  用于抽取特征
+model.py    目前使用XGBoost训练模型并预测16年9月份用电情况
 
 
 需要提取的特征：

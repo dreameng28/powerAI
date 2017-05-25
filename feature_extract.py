@@ -6,7 +6,7 @@ from data_view import DataView
 
 # 时间特征
 
-# 年月特征
+# 年月日特征
 def year_month_day(df):
     year = df[record_date].map(lambda x: x.split('/')[0])
     year.name = 'year'
@@ -23,7 +23,15 @@ def year_month_day(df):
         onehot_data = [0] * 12
     frame_m = pd.DataFrame(data=onehot_datas, columns=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                                                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
-    return df.join(year).join(month).join(frame_m)
+    onehot_data = [0] * 31
+    onehot_datas = []
+    for each in day:
+        each = int(each) - 1
+        onehot_data[each] = 1
+        onehot_datas.append(onehot_data)
+        onehot_data = [0] * 31
+    frame_d = pd.DataFrame(data=onehot_datas, columns=['day' + str(i) for i in range(1, 32)])
+    return df.join(year).join(month).join(day).join(frame_m).join(frame_d)
 
 
 # 星期特征
@@ -88,8 +96,19 @@ def user_info_m(df):
     user_power_var_m = user_power_var_m.rename(columns={power_consumption: 'user_power_var_m'})
     user_power_max_m = user_power_max_m.rename(columns={power_consumption: 'user_power_max_m'})
     user_power_min_m = user_power_min_m.rename(columns={power_consumption: 'user_power_min_m'})
-    return pd.merge(user_power_mean_m, user_power_median_m).merge(user_power_var_m).\
-        merge(user_power_max_m).merge(user_power_min_m)
+    unique_users_info = df[[user_id]].drop_duplicates()
+    for i in range(1, 13):
+        unique_users_info = unique_users_info.merge(
+            pd.merge(user_power_mean_m, user_power_median_m).merge(user_power_var_m). \
+                merge(user_power_max_m).merge(user_power_min_m)[user_power_median_m['month'] == str(i)].drop('month', axis=1) \
+                .rename(columns={
+                'user_power_mean_m': 'user_power_mean_m' + str(i),
+                'user_power_median_m': 'user_power_median_m' + str(i),
+                'user_power_var_m': 'user_power_var_m' + str(i),
+                'user_power_max_m': 'user_power_max_m' + str(i),
+                'user_power_min_m': 'user_power_min_m' + str(i)
+            }))
+    return unique_users_info
 
 
 # 用户对应星期每日用电量的平均数、中位数、方差、最大值、最小值
@@ -105,8 +124,18 @@ def user_info_w(df):
     user_power_var_w = user_power_var_w.rename(columns={power_consumption: 'user_power_var_w'})
     user_power_max_w = user_power_max_w.rename(columns={power_consumption: 'user_power_max_w'})
     user_power_min_w = user_power_min_w.rename(columns={power_consumption: 'user_power_min_w'})
-    return pd.merge(user_power_mean_w, user_power_median_w).merge(user_power_var_w).\
-        merge(user_power_max_w).merge(user_power_min_w)
+    unique_users_info = df[[user_id]].drop_duplicates()
+    for i in range(1, 8):
+        unique_users_info = unique_users_info.merge(pd.merge(user_power_mean_w, user_power_median_w).merge(user_power_var_w). \
+            merge(user_power_max_w).merge(user_power_min_w)[user_power_median_w['week'] == i].drop('week', axis=1)\
+            .rename(columns={
+            'user_power_mean_w': 'user_power_mean_w' + str(i),
+            'user_power_median_w': 'user_power_median_w' + str(i),
+            'user_power_var_w': 'user_power_var_w' + str(i),
+            'user_power_max_w': 'user_power_max_w' + str(i),
+            'user_power_min_w':'user_power_min_w' + str(i)
+        }))
+    return unique_users_info
 
 
 # 用户对应是否节假日用电量的平均数、中位数、方差、最大值、最小值
@@ -122,8 +151,19 @@ def user_info_h(df):
     user_power_var_h = user_power_var_h.rename(columns={power_consumption: 'user_power_var_h'})
     user_power_max_h = user_power_max_h.rename(columns={power_consumption: 'user_power_max_h'})
     user_power_min_h = user_power_min_h.rename(columns={power_consumption: 'user_power_min_h'})
-    return pd.merge(user_power_mean_h, user_power_median_h).merge(user_power_var_h).\
-        merge(user_power_max_h).merge(user_power_min_h)
+    unique_users_info = df[[user_id]].drop_duplicates()
+    for i in range(0, 2):
+        unique_users_info = unique_users_info.merge(
+            pd.merge(user_power_mean_h, user_power_median_h).merge(user_power_var_h). \
+                merge(user_power_max_h).merge(user_power_min_h)[user_power_median_h['is_holiday'] == i].drop('is_holiday', axis=1) \
+                .rename(columns={
+                'user_power_mean_h': 'user_power_mean_h' + str(i),
+                'user_power_median_h': 'user_power_median_h' + str(i),
+                'user_power_var_h': 'user_power_var_h' + str(i),
+                'user_power_max_h': 'user_power_max_h' + str(i),
+                'user_power_min_h': 'user_power_min_h' + str(i)
+            }))
+    return unique_users_info
 
 
 # 用户对应月份前一月每日用电量的平均数、中位数、方差、最大值、最小值
@@ -145,18 +185,33 @@ def user_info_m_p(df):
         merge(user_power_max_m).merge(user_power_min_m).drop('month', axis=1)
 
 
-# # 用户1-8月较15年的增长率
-# def rise_rate(df):
-#     df15 = DataView(tianchi_power_csv).filter_by_record_date('2015/1/1', '2015/8/31')
-#     df16 = DataView(tianchi_power_csv).filter_by_record_date('2016/1/1', '2016/8/31')
-#     grouped15 = df15[[user_id, power_consumption]].groupby(user_id, as_index=False).sum()
-#     grouped16 = df16[[user_id, power_consumption]].groupby(user_id, as_index=False).sum()
-#     user_rise_rate = pd.Series(map(lambda x, y: float(y - x) / x, grouped15[power_consumption], grouped16[power_consumption]))
-#     user_rise_rate.name = 'user_rise_rate'
-#     return grouped15.join(user_rise_rate).drop(power_consumption, axis=1)
+# 企业是否正常运转
+def is_alive(df):
+    date2 = df[record_date].map(lambda x: str2time(x)).max()
+    date1 = datetime.datetime(date2.year, date2.month, 1).date()
+    from dateutil.relativedelta import relativedelta
+    date1 -= relativedelta(months=+2)
+    grouped = DataView(df).filter_by_record_date2(date1, date2)[[user_id, power_consumption]].groupby([user_id], as_index=False).mean()
+    alive = grouped[power_consumption].map(lambda x: 0 if x < 10 else 1)
+    alive.name = 'is_alive'
+    return grouped.join(alive).drop(power_consumption, axis=1)
 
 
-user_features = [user_info, user_info_w, user_info_h, user_info_m, user_info_m_p]
+# 用户上月较上上月的增长率
+def rise_rate(df):
+    date1_2 = df[record_date].map(lambda x: str2time(x)).max()
+    date1_1 = datetime.datetime(date1_2.year, date1_2.month, 1).date()
+    grouped1 = DataView(df).filter_by_record_date2(date1_1, date1_2)[[user_id, power_consumption]].groupby([user_id], as_index=False).mean()
+    from dateutil.relativedelta import relativedelta
+    date2_1 = date1_1 - relativedelta(months=+1)
+    date2_2 = date1_2 - relativedelta(months=+1)
+    grouped2 = DataView(df).filter_by_record_date2(date2_1, date2_2)[[user_id, power_consumption]].groupby([user_id], as_index=False).mean()
+    user_rise_rate = pd.Series(map(lambda x, y: float(x - y) / y, grouped1[power_consumption], grouped2[power_consumption]))
+    user_rise_rate.name = 'user_rise_rate'
+    return grouped1[[user_id]].join(user_rise_rate)
+
+
+user_features = [user_info, user_info_w, user_info_h, user_info_m, user_info_m_p, is_alive, rise_rate]
 
 
 def extract_features(data_path, feature_data_path):
